@@ -5,7 +5,7 @@ const homeController = require('../controllers/homeController');
 let reviews =[];
 
 
-router.post("/api/reviews",(req,res)=>{
+router.post("/api/reviews",async (req,res)=>{
 
     try{
         const {companyName , rating, title, Description,email }=req.body;
@@ -14,14 +14,16 @@ router.post("/api/reviews",(req,res)=>{
                 msg : "Missed Some fields"
             })
         }
-        const newReviews = {
-            companyName : companyName,
-            rating : rating,
-            title : title,
-            Description : Description,
-            email : email
-        }
-        reviews.push(newReviews);
+        const review = await prisma.review.create({
+            data: {
+              companyName,
+              rating: Number(rating),
+              title,
+              description,
+              email,
+            },
+          });
+      
         res.json({
             msg : "rewiew submitted"
         })
@@ -37,8 +39,11 @@ router.post("/api/reviews",(req,res)=>{
 
 })
 
-router.get("/api/reviews" , (req,res)=>{
+router.get("/api/reviews" , async(req,res)=>{
     try {
+        const reviews = await prisma.review.findMany({
+            orderBy: { createdAt: 'desc' },
+          });
         res.json({
             data : reviews,
             msg : "reviews listed"
